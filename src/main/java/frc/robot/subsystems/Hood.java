@@ -1,0 +1,56 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
+package frc.robot.subsystems;
+
+import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.controls.ControlRequest;
+import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.constants.SuperstructureConstants;
+
+public class Hood extends SubsystemBase {
+  
+  private TalonFX hoodMotor = new TalonFX(20,"rio");
+
+  private MotionMagicExpoVoltage positionControl = new MotionMagicExpoVoltage(0);
+
+  private double targetPosition = 3;
+
+  StatusCode[] latestStatus;
+
+  public Hood() {
+    hoodMotor.getConfigurator().apply(SuperstructureConstants.HoodConstants.hoodMotorConfigs);
+  }
+
+  public void setPosition(double position) {
+    this.targetPosition = position;
+  }
+
+  public void setPositionFromPercentage(double value) {
+    this.targetPosition = 5.9 * value;
+  }
+  
+  public StatusCode[] setControl(ControlRequest control) {
+    return new StatusCode[]{
+      this.hoodMotor.setControl(control)
+    };
+  }
+
+  public double getHoodTargetPosition() {
+    return this.targetPosition;
+  }
+
+  public void zero() {
+    this.hoodMotor.setPosition(0);
+  }
+
+  @Override
+  public void periodic() {
+    // This method will be called once per scheduler run
+      this.latestStatus = this.setControl(positionControl.withPosition(this.targetPosition));
+  }
+}
