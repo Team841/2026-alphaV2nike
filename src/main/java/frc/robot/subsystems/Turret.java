@@ -35,8 +35,8 @@ public class Turret extends SubsystemBase {
     this.targetPosition = position;
   }
 
-  public void setPositionWithSupplier(DoubleSupplier position) {
-    this.targetPosition = position.getAsDouble();
+  public void setPositionWithRadians(double radians) {
+    this.targetPosition = radians * (22.0 / (2 * Math.PI));
   }
 
   public void setPositionWithRotation2d(Rotation2d rotation) {
@@ -49,8 +49,16 @@ public class Turret extends SubsystemBase {
     };
   }
 
-  public double getShooterTargetPosition() {
+  public double getTurretTargetPosition() {
     return this.targetPosition;
+  }
+
+  public double getPosition() {
+    return this.turretMotor.getPosition().getValueAsDouble();
+  }
+
+  public double getPositionInRadians() {
+    return this.getPosition() * (2.0 * Math.PI / 22.0);
   }
 
   public void zero() {

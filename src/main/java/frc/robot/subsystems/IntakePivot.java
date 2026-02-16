@@ -36,7 +36,7 @@ public class IntakePivot extends SubsystemBase {
     };
   }
 
-  public double getShooterTargetPosition() {
+  public double getIntakePivotTargetPosition() {
     return this.targetPosition;
   }
 

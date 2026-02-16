@@ -45,11 +45,11 @@ public class Intake extends SubsystemBase {
       && intakeMotor.getVelocity().getValueAsDouble() <= this.targetVelocity + 3;
   }
 
-  public double getShooterVelocity() {
+  public double getIntakeVelocity() {
     return this.intakeMotor.getRotorVelocity().getValueAsDouble();
   }
 
-  public double getShooterTargetVelocity() {
+  public double getIntakeTargetVelocity() {
     return this.targetVelocity;
   }
 

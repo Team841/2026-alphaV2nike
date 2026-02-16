@@ -47,7 +47,7 @@ public class RobotContainer {
     private final CommandXboxController joystick = new CommandXboxController(0);
     private final CommandPS5Controller cojoystick = new CommandPS5Controller(1);
 
-    public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    public final CommandSwerveDrivetrain drivetrain;
 
     public final IntakePivot intakePivot;
     public final Intake intake;
@@ -57,7 +57,9 @@ public class RobotContainer {
     public final Turret turret;
     public final Hood hood;
 
-    public RobotContainer(IntakePivot intakePivot, Intake intake, Shooter shooter, Agitator agitator, Indexer indexer, Turret turret, Hood hood) {
+    public RobotContainer(CommandSwerveDrivetrain drivetrain, IntakePivot intakePivot, Intake intake, Shooter shooter, Agitator agitator, Indexer indexer, Turret turret, Hood hood) {
+
+        this.drivetrain = drivetrain;
 
         this.intakePivot = intakePivot;
         this.intake = intake;
@@ -87,7 +89,7 @@ public class RobotContainer {
 
                     angle = (angle + 2 * Math.PI) % (2 * Math.PI);
 
-                    turretToRotate.setPosition(angle * (22.0 / (2 * Math.PI)));
+                    turretToRotate.setPositionWithRadians(angle);
                 }
             }, turretToRotate
             );
@@ -109,8 +111,8 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                drive.withVelocityX(joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
                     .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
