@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -19,6 +20,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -70,6 +72,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final Pose2d redHubPose = new Pose2d(11.914, 4.035, new Rotation2d());
 
     private final DoubleSupplier turretAngleSupplier;
+    private final BooleanSupplier turretAtPositionSupplier;
 
     NetworkTable appleTable = NetworkTableInstance.getDefault().getTable("limelight-apple");
 
@@ -173,6 +176,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      */
     public CommandSwerveDrivetrain(
         DoubleSupplier turretAngleSupplier,
+        BooleanSupplier turretAtPositionSupplier,
         SwerveDrivetrainConstants drivetrainConstants,
         SwerveModuleConstants<?, ?, ?>... modules
     ) {
@@ -182,6 +186,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
         
         this.turretAngleSupplier = turretAngleSupplier;
+        this.turretAtPositionSupplier = turretAtPositionSupplier;
     }
 
     /**
@@ -237,22 +242,22 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         visionPeriodic();
 
         /*
-         * Periodically try to apply the operator perspective.
-         * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
-         * This allows us to correct the perspective in case the robot code restarts mid-match.
-         * Otherwise, only check and apply the operator perspective if the DS is disabled.
-         * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
-         */
-        if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
-            DriverStation.getAlliance().ifPresent(allianceColor -> {
-                setOperatorPerspectiveForward(
-                    allianceColor == Alliance.Red
-                        ? kRedAlliancePerspectiveRotation
-                        : kBlueAlliancePerspectiveRotation
-                );
-                m_hasAppliedOperatorPerspective = true;
-            });
-        }
+        //  * Periodically try to apply the operator perspective.
+        //  * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
+        //  * This allows us to correct the perspective in case the robot code restarts mid-match.
+        //  * Otherwise, only check and apply the operator perspective if the DS is disabled.
+        //  * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
+        //  */
+        // if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
+        //     DriverStation.getAlliance().ifPresent(allianceColor -> {
+        //         setOperatorPerspectiveForward(
+        //             allianceColor == Alliance.Red
+        //                 ? kRedAlliancePerspectiveRotation
+        //                 : kBlueAlliancePerspectiveRotation
+        //         );
+        //         m_hasAppliedOperatorPerspective = true;
+        //     });
+        // }
     }
 
     private void startSimThread() {
@@ -390,22 +395,35 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void visionPeriodic(){
         setLLSettings();
 
-        double timestamp = Timer.getTimestamp();
-        visionProcessor.driveYawAngularVelocity.addSample(timestamp, this.getState().Speeds.omegaRadiansPerSecond);
-        visionProcessor.measuredRobotRelativeChassisSpeeds.set(this.getState().Speeds);
-        visionProcessor.robotPose.addSample(timestamp, this.getState().Pose);
+        Vector<N3> gammaDynamicSTD = VecBuilder.fill(0.3, 0.3, 0.3);
+        
+        
+        // double timestamp = Timer.getTimestamp();
+        // visionProcessor.driveYawAngularVelocity.addSample(timestamp, this.getState().Speeds.omegaRadiansPerSecond);
+        // visionProcessor.measuredRobotRelativeChassisSpeeds.set(this.getState().Speeds);
+        // visionProcessor.robotPose.addSample(timestamp, this.getState().Pose);
         boolean gammaSeesTarget = appleTable.getEntry("tv").getDouble(0) == 1.0;
         if (gammaSeesTarget) { // does it see target?
             var megatag = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-apple");
-            var megatag2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-apple");
-            if (megatag != null && megatag2 != null){
-                visionProcessor.updateVision(
-                    gammaSeesTarget,
-                    FiducialObservation.fromLimelight(megatag.rawFiducials),
-                    MegatagPoseEstimate.fromLimelight(megatag),
-                    MegatagPoseEstimate.fromLimelight(megatag2),
-                    "Vision/Gamma");
+            // var fiducialOb = FiducialObservation.fromLimelight(megatag.rawFiducials);
+            // var MPE = MegatagPoseEstimate.fromLimelight(megatag);
+            // var megatag2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-apple");
+            // megatag2.
+
+            gammaDynamicSTD = gammaDynamicSTD.times(megatag.avgTagArea);
+            Matrix<N3, N1> finalMatrix = VecBuilder.fill(gammaDynamicSTD.get(0), gammaDynamicSTD.get(1), gammaDynamicSTD.get(2));
+            
+            if (this.turretAtPositionSupplier.getAsBoolean()) {
+                this.addVisionMeasurement(megatag.pose, megatag.timestampSeconds, finalMatrix);
             }
+            // if (megatag != null && megatag2 != null){
+            //     visionProcessor.updateVision(
+            //         gammaSeesTarget,
+            //         FiducialObservation.fromLimelight(megatag.rawFiducials),
+            //         MegatagPoseEstimate.fromLimelight(megatag),
+            //         MegatagPoseEstimate.fromLimelight(megatag2),
+            //         "Vision/Gamma");
+            // }
         }
     }
 
@@ -432,7 +450,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             0.7747,
             0,
             0,
-            Math.toDegrees(this.turretAngleSupplier.getAsDouble()));
+            Math.toDegrees(this.turretAngleSupplier.getAsDouble()) + 180);
 
             limelightDisplacedPose.set(new Pose2d(limelightToRobot, new Rotation2d(this.turretAngleSupplier.getAsDouble())));
         } catch (Exception e) {

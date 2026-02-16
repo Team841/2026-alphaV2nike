@@ -57,6 +57,10 @@ public class Turret extends SubsystemBase {
     return this.turretMotor.getPosition().getValueAsDouble();
   }
 
+  public boolean isAtPosition() {
+    return Math.abs(this.getTurretTargetPosition() - this.getPosition()) < 0.2;
+  }
+
   public double getPositionInRadians() {
     return this.getPosition() * (2.0 * Math.PI / 22.0);
   }
