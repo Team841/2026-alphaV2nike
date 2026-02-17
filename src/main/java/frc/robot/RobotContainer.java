@@ -111,7 +111,7 @@ public class RobotContainer {
     public Command snapToHub() {
         return Commands.run(
                 () -> {
-                    double angle = wrapTo2Pi(drivetrain.getAngleToScoreWhileMoving(drivetrain.getDistanceToHubWhileMoving(shooter.getTimeOfFlightFromDistanceMeters(drivetrain.getDistanceToHub()))).getRadians());
+                    double angle = wrapTo2Pi(drivetrain.getAngleToScoreWhileMoving((shooter.getTimeOfFlightFromDistanceMeters(drivetrain.getDistanceToHub()))).getRadians());
                     angle = wrapTo2Pi(angle - Math.PI);
                     angle = wrapTo2Pi(angle - drivetrain.getState().Pose.getRotation().getRadians());
 

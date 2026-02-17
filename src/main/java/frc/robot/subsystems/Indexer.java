@@ -52,10 +52,6 @@ public class Indexer extends SubsystemBase {
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
-        if (this.targetVelocity == 0) {
-            this.stopMotor();
-        } else {
-            this.latestStatus = this.setControl(velocityControl.withVelocity(this.targetVelocity));
-        }
+        this.latestStatus = this.setControl(velocityControl.withVelocity(this.targetVelocity));
     }
 }

@@ -36,11 +36,11 @@ public class Turret extends SubsystemBase {
     }
 
     public void setPositionWithRadians(double radians) {
-        this.targetPosition = radians * (22.0 / (2 * Math.PI));
+        this.targetPosition = radians * (21.9 / (2 * Math.PI));
     }
 
     public void setPositionWithRotation2d(Rotation2d rotation) {
-        this.targetPosition = (rotation.getRotations() * 22);
+        this.targetPosition = (rotation.getRotations() * 21.9);
     }
 
     public StatusCode[] setControl(ControlRequest control) {
@@ -62,7 +62,7 @@ public class Turret extends SubsystemBase {
     }
 
     public double getPositionInRadians() {
-        return this.getPosition() * (2.0 * Math.PI / 22.0);
+        return this.getPosition() * (2.0 * Math.PI / 21.9);
     }
 
     public void zero() {

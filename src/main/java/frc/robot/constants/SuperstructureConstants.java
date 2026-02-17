@@ -102,7 +102,7 @@ public class SuperstructureConstants {
                                 new SoftwareLimitSwitchConfigs()
                                         .withForwardSoftLimitEnable(true)
                                         .withReverseSoftLimitEnable(true)
-                                        .withForwardSoftLimitThreshold(22)
+                                        .withForwardSoftLimitThreshold(21.9)
                                         .withReverseSoftLimitThreshold(0));
 
     }
