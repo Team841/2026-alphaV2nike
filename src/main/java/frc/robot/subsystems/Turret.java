@@ -18,61 +18,61 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.robot.constants.SuperstructureConstants;
 
 public class Turret extends SubsystemBase {
-  
-  private TalonFX turretMotor = new TalonFX(27,"rio");
 
-  private MotionMagicExpoVoltage positionControl = new MotionMagicExpoVoltage(0);
+    private TalonFX turretMotor = new TalonFX(27, "rio");
 
-  private double targetPosition = 0;
+    private MotionMagicExpoVoltage positionControl = new MotionMagicExpoVoltage(0);
 
-  StatusCode[] latestStatus;
+    private double targetPosition = 0;
 
-  public Turret() {
-    turretMotor.getConfigurator().apply(SuperstructureConstants.TurretConstants.turretMotorConfigs);
-  }
+    StatusCode[] latestStatus;
 
-  public void setPosition(double position) {
-    this.targetPosition = position;
-  }
+    public Turret() {
+        turretMotor.getConfigurator().apply(SuperstructureConstants.TurretConstants.turretMotorConfigs);
+    }
 
-  public void setPositionWithRadians(double radians) {
-    this.targetPosition = radians * (22.0 / (2 * Math.PI));
-  }
+    public void setPosition(double position) {
+        this.targetPosition = position;
+    }
 
-  public void setPositionWithRotation2d(Rotation2d rotation) {
-    this.targetPosition = (rotation.getRotations() * 22);
-  }
-  
-  public StatusCode[] setControl(ControlRequest control) {
-    return new StatusCode[]{
-      this.turretMotor.setControl(control)
-    };
-  }
+    public void setPositionWithRadians(double radians) {
+        this.targetPosition = radians * (22.0 / (2 * Math.PI));
+    }
 
-  public double getTurretTargetPosition() {
-    return this.targetPosition;
-  }
+    public void setPositionWithRotation2d(Rotation2d rotation) {
+        this.targetPosition = (rotation.getRotations() * 22);
+    }
 
-  public double getPosition() {
-    return this.turretMotor.getPosition().getValueAsDouble();
-  }
+    public StatusCode[] setControl(ControlRequest control) {
+        return new StatusCode[] {
+                this.turretMotor.setControl(control)
+        };
+    }
 
-  public boolean isAtPosition() {
-    return Math.abs(this.getTurretTargetPosition() - this.getPosition()) < 0.2;
-  }
+    public double getTurretTargetPosition() {
+        return this.targetPosition;
+    }
 
-  public double getPositionInRadians() {
-    return this.getPosition() * (2.0 * Math.PI / 22.0);
-  }
+    public double getPosition() {
+        return this.turretMotor.getPosition().getValueAsDouble();
+    }
 
-  public void zero() {
-    this.turretMotor.setPosition(0);
-  }
+    public boolean isAtPosition() {
+        return Math.abs(this.getTurretTargetPosition() - this.getPosition()) < 0.2;
+    }
 
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-      this.latestStatus = this.setControl(positionControl.withPosition(this.targetPosition));
+    public double getPositionInRadians() {
+        return this.getPosition() * (2.0 * Math.PI / 22.0);
+    }
 
-  }
+    public void zero() {
+        this.turretMotor.setPosition(0);
+    }
+
+    @Override
+    public void periodic() {
+        // This method will be called once per scheduler run
+        this.latestStatus = this.setControl(positionControl.withPosition(this.targetPosition));
+
+    }
 }

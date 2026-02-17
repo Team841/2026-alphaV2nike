@@ -110,18 +110,29 @@ public class RobotContainer {
 
     public Command snapToHub() {
         return Commands.run(
-            () -> {
-                double angle = wrapTo2Pi(drivetrain.getAngleToScore().getRadians());
-                angle = wrapTo2Pi(angle - Math.PI);
-                angle = wrapTo2Pi(angle - drivetrain.getState().Pose.getRotation().getRadians());
-                
-                turret.setPositionWithRadians(angle);
-            }, 
-            turret);
+                () -> {
+                    double angle = wrapTo2Pi(drivetrain.getAngleToScoreWhileMoving(drivetrain.getDistanceToHubWhileMoving(shooter.getTimeOfFlightFromDistanceMeters(drivetrain.getDistanceToHub()))).getRadians());
+                    angle = wrapTo2Pi(angle - Math.PI);
+                    angle = wrapTo2Pi(angle - drivetrain.getState().Pose.getRotation().getRadians());
+
+                    turret.setPositionWithRadians(angle);
+                },
+                turret);
     }
 
     public static double wrapTo2Pi(double angle) {
         return (angle % (2.0 * Math.PI) + 2.0 * Math.PI) % (2.0 * Math.PI);
+    }
+
+    public Command spinUpShooterForHubShot() {
+        return Commands.run(
+                () -> {
+                    double distanceToHub = drivetrain.getDistanceToHubWhileMoving(
+                            shooter.getTimeOfFlightFromDistanceMeters(
+                                    drivetrain.getDistanceToHub()));
+                    shooter.setVelocity(shooter.getShooterSpeedFromDistanceMeters(distanceToHub));
+                },
+                shooter);
     }
 
     private void configureBindings() {
@@ -130,28 +141,36 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
                 // Drivetrain will execute this command periodically
                 drivetrain.applyRequest(
-                    () -> { 
-                        if(DriverStation.getAlliance().isPresent()){
-                            if (DriverStation.getAlliance().get() == Alliance.Red) {
-                               return drive.withVelocityX(joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                                        .withVelocityY(joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                                        .withRotationalRate(-joystick.getRightX() * MaxAngularRate); // Drive counterclockwise
-                                                                                                    // with negative X (left)
+                        () -> {
+                            if (DriverStation.getAlliance().isPresent()) {
+                                if (DriverStation.getAlliance().get() == Alliance.Red) {
+                                    return drive.withVelocityX(joystick.getLeftY() * MaxSpeed) // Drive forward with
+                                                                                               // negative Y (forward)
+                                            .withVelocityY(joystick.getLeftX() * MaxSpeed) // Drive left with negative X
+                                                                                           // (left)
+                                            .withRotationalRate(-joystick.getRightX() * MaxAngularRate); // Drive
+                                                                                                         // counterclockwise
+                                                                                                         // with
+                                                                                                         // negative X
+                                                                                                         // (left)
+                                } else {
+                                    return drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with
+                                                                                                // negative Y (forward)
+                                            .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative
+                                                                                            // X (left)
+                                            .withRotationalRate(-joystick.getRightX() * MaxAngularRate); // Drive
+                                                                                                         // counterclockwise
+                                                                                                         // with
+                                                                                                         // negative X
+                                                                                                         // (left)
+                                }
                             } else {
-                                return drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                                        .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                                        .withRotationalRate(-joystick.getRightX() * MaxAngularRate); // Drive counterclockwise
-                                                                                                    // with negative X (left)
-                            }
-                        } else {
-                            return drive.withVelocityX(0) // Drive forward with negative Y (forward)
+                                return drive.withVelocityX(0) // Drive forward with negative Y (forward)
                                         .withVelocityY(0) // Drive left with negative X (left)
                                         .withRotationalRate(0); // Drive counterclockwise
-                        }
+                            }
 
-                    }
-                )
-        );
+                        }));
 
         turret.setDefaultCommand(snapToHub());
 
@@ -179,13 +198,13 @@ public class RobotContainer {
                         () -> intakePivot.atPosition(-7.3))))
                 .onFalse(new InstantCommand(() -> intake.setVelocity(0)));
 
-        joystick.rightBumper().onTrue(new InstantCommand(() -> shooter.setVelocity(-30)))
-                .onFalse(new InstantCommand(() -> shooter.setVelocity(0)));
-
         joystick.rightTrigger().or(cojoystick.R2()).onTrue(new InstantCommand(() -> agitator.startAgMotor(-0.3)))
                 .onFalse(new InstantCommand(() -> agitator.stopAgMotor()));
         joystick.rightTrigger().or(cojoystick.R2()).onTrue(new InstantCommand(() -> indexer.setVelocity(30)))
                 .onFalse(new InstantCommand(() -> indexer.setVelocity(0)));
+
+        joystick.rightBumper().whileTrue(spinUpShooterForHubShot())
+                .onFalse(new InstantCommand(() -> shooter.setVelocity(0)));
 
         joystick.rightStick().onTrue(new InstantCommand(() -> hood.setPosition(5.9)));
         joystick.leftStick().onTrue(new InstantCommand(() -> hood.setPosition(0)));

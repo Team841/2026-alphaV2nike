@@ -13,44 +13,44 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.SuperstructureConstants;
 
 public class IntakePivot extends SubsystemBase {
-  
-  private TalonFX intakePivotMotor = new TalonFX(21,"rio");
 
-  private MotionMagicExpoVoltage positionControl = new MotionMagicExpoVoltage(0);
+    private TalonFX intakePivotMotor = new TalonFX(21, "rio");
 
-  private double targetPosition = 3;
+    private MotionMagicExpoVoltage positionControl = new MotionMagicExpoVoltage(0);
 
-  StatusCode[] latestStatus;
+    private double targetPosition = 3;
 
-  public IntakePivot() {
-    intakePivotMotor.getConfigurator().apply(SuperstructureConstants.IntakePivotConstants.intakePivotMotorConfigs);
-  }
+    StatusCode[] latestStatus;
 
-  public void setPosition(double position) {
-    this.targetPosition = position;
-  }
-  
-  public StatusCode[] setControl(ControlRequest control) {
-    return new StatusCode[]{
-      this.intakePivotMotor.setControl(control)
-    };
-  }
+    public IntakePivot() {
+        intakePivotMotor.getConfigurator().apply(SuperstructureConstants.IntakePivotConstants.intakePivotMotorConfigs);
+    }
 
-  public double getIntakePivotTargetPosition() {
-    return this.targetPosition;
-  }
+    public void setPosition(double position) {
+        this.targetPosition = position;
+    }
 
-  public boolean atPosition(double position) {
-    return Math.abs(this.intakePivotMotor.getPosition().getValueAsDouble() - position) < 1;
-  }
+    public StatusCode[] setControl(ControlRequest control) {
+        return new StatusCode[] {
+                this.intakePivotMotor.setControl(control)
+        };
+    }
 
-  public void zero() {
-    this.intakePivotMotor.setPosition(0);
-  }
+    public double getIntakePivotTargetPosition() {
+        return this.targetPosition;
+    }
 
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-      this.latestStatus = this.setControl(positionControl.withPosition(this.targetPosition));
-  }
+    public boolean atPosition(double position) {
+        return Math.abs(this.intakePivotMotor.getPosition().getValueAsDouble() - position) < 1;
+    }
+
+    public void zero() {
+        this.intakePivotMotor.setPosition(0);
+    }
+
+    @Override
+    public void periodic() {
+        // This method will be called once per scheduler run
+        this.latestStatus = this.setControl(positionControl.withPosition(this.targetPosition));
+    }
 }

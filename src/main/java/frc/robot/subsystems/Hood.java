@@ -13,44 +13,44 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.SuperstructureConstants;
 
 public class Hood extends SubsystemBase {
-  
-  private TalonFX hoodMotor = new TalonFX(20,"rio");
 
-  private MotionMagicExpoVoltage positionControl = new MotionMagicExpoVoltage(0);
+    private TalonFX hoodMotor = new TalonFX(20, "rio");
 
-  private double targetPosition = 3;
+    private MotionMagicExpoVoltage positionControl = new MotionMagicExpoVoltage(0);
 
-  StatusCode[] latestStatus;
+    private double targetPosition = 3;
 
-  public Hood() {
-    hoodMotor.getConfigurator().apply(SuperstructureConstants.HoodConstants.hoodMotorConfigs);
-  }
+    StatusCode[] latestStatus;
 
-  public void setPosition(double position) {
-    this.targetPosition = position;
-  }
+    public Hood() {
+        hoodMotor.getConfigurator().apply(SuperstructureConstants.HoodConstants.hoodMotorConfigs);
+    }
 
-  public void setPositionFromPercentage(double value) {
-    this.targetPosition = 5.9 * value;
-  }
-  
-  public StatusCode[] setControl(ControlRequest control) {
-    return new StatusCode[]{
-      this.hoodMotor.setControl(control)
-    };
-  }
+    public void setPosition(double position) {
+        this.targetPosition = position;
+    }
 
-  public double getHoodTargetPosition() {
-    return this.targetPosition;
-  }
+    public void setPositionFromPercentage(double value) {
+        this.targetPosition = 5.9 * value;
+    }
 
-  public void zero() {
-    this.hoodMotor.setPosition(0);
-  }
+    public StatusCode[] setControl(ControlRequest control) {
+        return new StatusCode[] {
+                this.hoodMotor.setControl(control)
+        };
+    }
 
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-      this.latestStatus = this.setControl(positionControl.withPosition(this.targetPosition));
-  }
+    public double getHoodTargetPosition() {
+        return this.targetPosition;
+    }
+
+    public void zero() {
+        this.hoodMotor.setPosition(0);
+    }
+
+    @Override
+    public void periodic() {
+        // This method will be called once per scheduler run
+        this.latestStatus = this.setControl(positionControl.withPosition(this.targetPosition));
+    }
 }

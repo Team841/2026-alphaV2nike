@@ -11,23 +11,23 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Agitator extends SubsystemBase {
 
-private TalonFX agitatorMotor = new TalonFX(24, "rio");
+    private TalonFX agitatorMotor = new TalonFX(24, "rio");
 
-public void startAgMotor(double speed) {
-  agitatorMotor.set(speed);
-}
+    public void startAgMotor(double speed) {
+        agitatorMotor.set(speed);
+    }
 
-public void stopAgMotor() {
-  agitatorMotor.stopMotor();
-}
+    public void stopAgMotor() {
+        agitatorMotor.stopMotor();
+    }
 
-  /** Creates a new AG. */
-  public Agitator() {
-    agitatorMotor.getConfigurator().apply(new TalonFXConfiguration());
-  }
+    /** Creates a new AG. */
+    public Agitator() {
+        agitatorMotor.getConfigurator().apply(new TalonFXConfiguration());
+    }
 
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-  }
+    @Override
+    public void periodic() {
+        // This method will be called once per scheduler run
+    }
 }

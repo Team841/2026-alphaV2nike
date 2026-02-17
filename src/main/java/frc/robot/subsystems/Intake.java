@@ -13,54 +13,53 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.SuperstructureConstants;
 
 public class Intake extends SubsystemBase {
-  private TalonFX intakeMotor = new TalonFX(23,"rio");
+    private TalonFX intakeMotor = new TalonFX(23, "rio");
 
-  private VelocityVoltage velocityControl = new VelocityVoltage(0);
+    private VelocityVoltage velocityControl = new VelocityVoltage(0);
 
-  private double targetVelocity = 0;
+    private double targetVelocity = 0;
 
-  StatusCode[] latestStatus;
+    StatusCode[] latestStatus;
 
-  public Intake() {
-    intakeMotor.getConfigurator().apply(SuperstructureConstants.IntakeConstants.intakeConfigs);
-  }
-
-  public void setVelocity(double rps) {
-    this.targetVelocity = rps;
-  }
-
-  public void stopMotor() {
-    this.targetVelocity = 0;
-    this.intakeMotor.stopMotor();
-  }
-  
-  public StatusCode[] setControl(ControlRequest control) {
-    return new StatusCode[]{
-      this.intakeMotor.setControl(control)
-    };
-  }
-  
-  public boolean atfullSpeed() {
-    return intakeMotor.getVelocity().getValueAsDouble() >= this.targetVelocity - 1 
-      && intakeMotor.getVelocity().getValueAsDouble() <= this.targetVelocity + 3;
-  }
-
-  public double getIntakeVelocity() {
-    return this.intakeMotor.getRotorVelocity().getValueAsDouble();
-  }
-
-  public double getIntakeTargetVelocity() {
-    return this.targetVelocity;
-  }
-
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-    if (this.targetVelocity == 0) {
-      this.stopMotor();
-    } else {
-      this.latestStatus = this.setControl(velocityControl.withVelocity(this.targetVelocity));
+    public Intake() {
+        intakeMotor.getConfigurator().apply(SuperstructureConstants.IntakeConstants.intakeConfigs);
     }
-  }
-}
 
+    public void setVelocity(double rps) {
+        this.targetVelocity = rps;
+    }
+
+    public void stopMotor() {
+        this.targetVelocity = 0;
+        this.intakeMotor.stopMotor();
+    }
+
+    public StatusCode[] setControl(ControlRequest control) {
+        return new StatusCode[] {
+                this.intakeMotor.setControl(control)
+        };
+    }
+
+    public boolean atfullSpeed() {
+        return intakeMotor.getVelocity().getValueAsDouble() >= this.targetVelocity - 1
+                && intakeMotor.getVelocity().getValueAsDouble() <= this.targetVelocity + 3;
+    }
+
+    public double getIntakeVelocity() {
+        return this.intakeMotor.getRotorVelocity().getValueAsDouble();
+    }
+
+    public double getIntakeTargetVelocity() {
+        return this.targetVelocity;
+    }
+
+    @Override
+    public void periodic() {
+        // This method will be called once per scheduler run
+        if (this.targetVelocity == 0) {
+            this.stopMotor();
+        } else {
+            this.latestStatus = this.setControl(velocityControl.withVelocity(this.targetVelocity));
+        }
+    }
+}

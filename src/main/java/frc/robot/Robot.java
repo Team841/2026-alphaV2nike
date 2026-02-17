@@ -50,6 +50,15 @@ public class Robot extends TimedRobot {
     BooleanPublisher turretAtPosition =
     table.getBooleanTopic("TurretAtPosition").publish();
 
+    DoublePublisher shooterVelocity =
+    table.getDoubleTopic("ShooterVelocity").publish();
+
+    DoublePublisher shooterTargetVelocity =
+    table.getDoubleTopic("ShooterTargetVelocity").publish();
+    
+    BooleanPublisher ShooterAtSpeed =
+    table.getBooleanTopic("ShooterAtSpeed").publish();
+
     /* log and replay timestamp and joystick data */
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
         .withTimestampReplay()
@@ -85,6 +94,10 @@ public class Robot extends TimedRobot {
         turretPosition.set(this.turret.getPosition());
         turretTargetPosition.set(this.turret.getTurretTargetPosition());
         turretAtPosition.set(this.turret.isAtPosition());
+
+        shooterVelocity.set(this.shooter.getShooterVelocity());
+        shooterTargetVelocity.set(this.shooter.getShooterTargetVelocity());
+        ShooterAtSpeed.set(this.shooter.atfullSpeed());
     }
 
     @Override
