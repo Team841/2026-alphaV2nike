@@ -21,13 +21,11 @@ public class Agitator extends SubsystemBase {
         agitatorMotor.stopMotor();
     }
 
-    /** Creates a new AG. */
     public Agitator() {
         agitatorMotor.getConfigurator().apply(new TalonFXConfiguration());
     }
 
     @Override
     public void periodic() {
-        // This method will be called once per scheduler run
     }
 }

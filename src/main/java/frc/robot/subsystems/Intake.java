@@ -36,7 +36,7 @@ public class Intake extends SubsystemBase {
 
     public StatusCode[] setControl(ControlRequest control) {
         return new StatusCode[] {
-                this.intakeMotor.setControl(control)
+            this.intakeMotor.setControl(control)
         };
     }
 
@@ -55,7 +55,6 @@ public class Intake extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // This method will be called once per scheduler run
         if (this.targetVelocity == 0) {
             this.stopMotor();
         } else {

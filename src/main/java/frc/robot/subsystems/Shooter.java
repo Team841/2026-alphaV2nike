@@ -7,7 +7,6 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
@@ -19,8 +18,6 @@ public class Shooter extends SubsystemBase {
 
 	private VelocityVoltage velocityControl = new VelocityVoltage(0);
 
-	private VoltageOut voltageOutControl = new VoltageOut(0);
-
 	private InterpolatingDoubleTreeMap shooterSpeedsMap;
 
 	private InterpolatingDoubleTreeMap timeOfFlightMap;
@@ -29,7 +26,6 @@ public class Shooter extends SubsystemBase {
 
 	StatusCode[] latestStatus;
 
-	/** Creates a new Shooter. */
 	public Shooter() {
 		this.rightMotor.getConfigurator().apply(SuperstructureConstants.ShooterConstants.shooterConfigs);
 
@@ -96,7 +92,6 @@ public class Shooter extends SubsystemBase {
 
 	@Override
 	public void periodic() {
-		// This method will be called once per scheduler run
 		if (this.targetVelocity == 0) {
 			this.stopMotor();
 		} else {

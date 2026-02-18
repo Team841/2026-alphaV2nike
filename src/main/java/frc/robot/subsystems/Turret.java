@@ -4,17 +4,13 @@
 
 package frc.robot.subsystems;
 
-import java.util.function.DoubleSupplier;
-
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.robot.constants.SuperstructureConstants;
 
 public class Turret extends SubsystemBase {
@@ -71,8 +67,6 @@ public class Turret extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // This method will be called once per scheduler run
         this.latestStatus = this.setControl(positionControl.withPosition(this.targetPosition));
-
     }
 }

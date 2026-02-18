@@ -12,7 +12,6 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -24,7 +23,6 @@ import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.constants.RobotConstants;
 import frc.robot.constants.TunerConstants;
 import frc.robot.subsystems.Agitator;
@@ -46,8 +44,6 @@ public class RobotContainer {
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-    private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-    private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
@@ -64,8 +60,15 @@ public class RobotContainer {
     public final Turret turret;
     public final Hood hood;
 
-    public RobotContainer(CommandSwerveDrivetrain drivetrain, IntakePivot intakePivot, Intake intake, Shooter shooter,
-            Agitator agitator, Indexer indexer, Turret turret, Hood hood) {
+    public RobotContainer(
+        CommandSwerveDrivetrain drivetrain, 
+        IntakePivot intakePivot, 
+        Intake intake, 
+        Shooter shooter,
+        Agitator agitator, 
+        Indexer indexer, 
+        Turret turret, 
+        Hood hood) {
 
         this.drivetrain = drivetrain;
 
@@ -182,54 +185,31 @@ public class RobotContainer {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
-                // Drivetrain will execute this command periodically
-                drivetrain.applyRequest(
-                        () -> {
-                            if (DriverStation.getAlliance().isPresent()) {
-                                if (DriverStation.getAlliance().get() == Alliance.Red) {
-                                    return drive.withVelocityX(joystick.getLeftY() * MaxSpeed) // Drive forward with
-                                                                                               // negative Y (forward)
-                                            .withVelocityY(joystick.getLeftX() * MaxSpeed) // Drive left with negative X
-                                                                                           // (left)
-                                            .withRotationalRate(-joystick.getRightX() * MaxAngularRate); // Drive
-                                                                                                         // counterclockwise
-                                                                                                         // with
-                                                                                                         // negative X
-                                                                                                         // (left)
-                                } else {
-                                    return drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with
-                                                                                                // negative Y (forward)
-                                            .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative
-                                                                                            // X (left)
-                                            .withRotationalRate(-joystick.getRightX() * MaxAngularRate); // Drive
-                                                                                                         // counterclockwise
-                                                                                                         // with
-                                                                                                         // negative X
-                                                                                                         // (left)
-                                }
-                            } else {
-                                return drive.withVelocityX(0) // Drive forward with negative Y (forward)
-                                        .withVelocityY(0) // Drive left with negative X (left)
-                                        .withRotationalRate(0); // Drive counterclockwise
-                            }
-
-                        }));
+            drivetrain.applyRequest(
+                () -> {
+                    if (DriverStation.getAlliance().isPresent()) {
+                        if (DriverStation.getAlliance().get() == Alliance.Red) {
+                            return drive.withVelocityX(joystick.getLeftY() * MaxSpeed) 
+                                .withVelocityY(joystick.getLeftX() * MaxSpeed) 
+                                .withRotationalRate(-joystick.getRightX() * MaxAngularRate); 
+                        } else {
+                            return drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) 
+                                .withVelocityY(-joystick.getLeftX() * MaxSpeed) 
+                                .withRotationalRate(-joystick.getRightX() * MaxAngularRate); 
+                        }
+                    } else {
+                        return drive.withVelocityX(0) 
+                            .withVelocityY(0) 
+                            .withRotationalRate(0); 
+                    }
+        }));
 
         turret.setDefaultCommand(snapTurretToHub());
 
-        // Idle while the robot is disabled. This ensures the configured
-        // neutral mode is applied to the drive motors while disabled.
         final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
                 drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
-        // joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        // joystick.b().whileTrue(drivetrain.applyRequest(() ->
-        // point.withModuleDirection(new Rotation2d(-joystick.getLeftY(),
-        // -joystick.getLeftX()))
-        // ));
-
-        // Reset the field-centric heading on left bumper press.
         joystick.start().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         joystick.leftTrigger().or(cojoystick.L2()).onTrue(new InstantCommand(() -> intakePivot.setPosition(-7.3)))
@@ -259,8 +239,7 @@ public class RobotContainer {
         joystick.rightStick().onTrue(new InstantCommand(() -> hood.setPosition(5.9)));
         joystick.leftStick().onTrue(new InstantCommand(() -> hood.setPosition(0)));
 
-        cojoystick.L1()
-                .whileTrue(rotateTurretToJoystick(turret, () -> cojoystick.getLeftX(), () -> -cojoystick.getLeftY()));
+        cojoystick.L1().whileTrue(rotateTurretToJoystick(turret, () -> cojoystick.getLeftX(), () -> -cojoystick.getLeftY()));
 
         cojoystick.R1().whileTrue(rotateHoodToJoystick(hood, () -> -cojoystick.getRightY()));
 

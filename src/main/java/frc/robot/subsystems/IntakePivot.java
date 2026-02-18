@@ -32,7 +32,7 @@ public class IntakePivot extends SubsystemBase {
 
     public StatusCode[] setControl(ControlRequest control) {
         return new StatusCode[] {
-                this.intakePivotMotor.setControl(control)
+            this.intakePivotMotor.setControl(control)
         };
     }
 
@@ -50,7 +50,6 @@ public class IntakePivot extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // This method will be called once per scheduler run
         this.latestStatus = this.setControl(positionControl.withPosition(this.targetPosition));
     }
 }
