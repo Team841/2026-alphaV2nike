@@ -405,37 +405,37 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void visionPeriodic() {
         setLLSettings();
 
-        Vector<N3> gammaDynamicSTD = VecBuilder.fill(0.3, 0.3, 999999999);
+        // Vector<N3> gammaDynamicSTD = VecBuilder.fill(0.3, 0.3, 999999999);
 
-        // double timestamp = Timer.getTimestamp();
-        // visionProcessor.driveYawAngularVelocity.addSample(timestamp,
-        // this.getState().Speeds.omegaRadiansPerSecond);
-        // visionProcessor.measuredRobotRelativeChassisSpeeds.set(this.getState().Speeds);
-        // visionProcessor.robotPose.addSample(timestamp, this.getState().Pose);
+        // boolean gammaSeesTarget = appleTable.getEntry("tv").getDouble(0) == 1.0;
+        // if (gammaSeesTarget) { // does it see target?
+        //     var megatag = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-apple");
+
+        //     gammaDynamicSTD = gammaDynamicSTD.times(megatag.avgTagArea);
+        //     Matrix<N3, N1> finalMatrix = VecBuilder.fill(gammaDynamicSTD.get(0), gammaDynamicSTD.get(1),
+        //             gammaDynamicSTD.get(2));
+
+        //     if (this.turretAtPositionSupplier.getAsBoolean()) {
+        //         this.addVisionMeasurement(megatag.pose, megatag.timestampSeconds, finalMatrix);
+        //     }
+        // }
+
+        double timestamp = Timer.getTimestamp();
+        visionProcessor.driveYawAngularVelocity.addSample(timestamp, this.getState().Speeds.omegaRadiansPerSecond);
+        visionProcessor.measuredRobotRelativeChassisSpeeds.set(this.getState().Speeds);
+        visionProcessor.robotPose.addSample(timestamp, this.getState().Pose);
         boolean gammaSeesTarget = appleTable.getEntry("tv").getDouble(0) == 1.0;
         if (gammaSeesTarget) { // does it see target?
             var megatag = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-apple");
-            // var fiducialOb = FiducialObservation.fromLimelight(megatag.rawFiducials);
-            // var MPE = MegatagPoseEstimate.fromLimelight(megatag);
-            // var megatag2 =
-            // LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-apple");
-            // megatag2.
-
-            gammaDynamicSTD = gammaDynamicSTD.times(megatag.avgTagArea);
-            Matrix<N3, N1> finalMatrix = VecBuilder.fill(gammaDynamicSTD.get(0), gammaDynamicSTD.get(1),
-                    gammaDynamicSTD.get(2));
-
-            if (this.turretAtPositionSupplier.getAsBoolean()) {
-                this.addVisionMeasurement(megatag.pose, megatag.timestampSeconds, finalMatrix);
+            var megatag2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-apple");
+            if (megatag != null && megatag2 != null && this.turretAtPositionSupplier.getAsBoolean()){
+                visionProcessor.updateVision(
+                    gammaSeesTarget,
+                    FiducialObservation.fromLimelight(megatag.rawFiducials),
+                    MegatagPoseEstimate.fromLimelight(megatag),
+                    MegatagPoseEstimate.fromLimelight(megatag2),
+                    "Vision/Gamma");
             }
-            // if (megatag != null && megatag2 != null){
-            // visionProcessor.updateVision(
-            // gammaSeesTarget,
-            // FiducialObservation.fromLimelight(megatag.rawFiducials),
-            // MegatagPoseEstimate.fromLimelight(megatag),
-            // MegatagPoseEstimate.fromLimelight(megatag2),
-            // "Vision/Gamma");
-            // }
         }
     }
 

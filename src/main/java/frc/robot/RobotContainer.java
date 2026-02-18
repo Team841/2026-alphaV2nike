@@ -12,17 +12,20 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.constants.RobotConstants;
 import frc.robot.constants.TunerConstants;
 import frc.robot.subsystems.Agitator;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -108,7 +111,7 @@ public class RobotContainer {
                 });
     }
 
-    public Command snapToHub() {
+    public Command snapTurretToHub() {
         return Commands.run(
                 () -> {
                     double angle = wrapTo2Pi(drivetrain.getAngleToScoreWhileMoving((shooter.getTimeOfFlightFromDistanceMeters(drivetrain.getDistanceToHub()))).getRadians());
@@ -118,6 +121,46 @@ public class RobotContainer {
                     turret.setPositionWithRadians(angle);
                 },
                 turret);
+    }
+
+    public Command snapHoodToHub() {
+        return Commands.run(
+            () -> {
+                hood.setPosition(hood.getHoodHeightFromMetersToHub(drivetrain.getDistanceToHubWhileMoving(shooter.getTimeOfFlightFromDistanceMeters(drivetrain.getDistanceToHub()))));
+            }, 
+            hood);
+    }
+
+    public Command autoIndex() {
+        return Commands.run(
+            () -> {
+                if (shooter.atfullSpeed()) {
+                    indexer.setVelocity(30);
+                    agitator.startAgMotor(-0.7);
+                } else {
+                    indexer.setVelocity(0);
+                    agitator.startAgMotor(-0.1);
+                }
+            }, 
+            indexer, agitator);
+    }
+
+    public Command snapToPass() {
+        return Commands.run(
+            () -> {
+                double angle;
+                
+                if (RobotConstants.isRedAlliance.getAsBoolean()) {
+                    angle = wrapTo2Pi(-drivetrain.getState().Pose.getRotation().getRadians() - Math.PI);
+                } else {
+                    angle = wrapTo2Pi(-drivetrain.getState().Pose.getRotation().getRadians());
+                }
+
+                turret.setPositionWithRadians(angle);
+                hood.setPosition(5.9);
+                shooter.setVelocity(-35);
+            }, 
+            turret, hood, shooter);
     }
 
     public static double wrapTo2Pi(double angle) {
@@ -172,7 +215,7 @@ public class RobotContainer {
 
                         }));
 
-        turret.setDefaultCommand(snapToHub());
+        turret.setDefaultCommand(snapTurretToHub());
 
         // Idle while the robot is disabled. This ensures the configured
         // neutral mode is applied to the drive motors while disabled.
@@ -198,13 +241,20 @@ public class RobotContainer {
                         () -> intakePivot.atPosition(-7.3))))
                 .onFalse(new InstantCommand(() -> intake.setVelocity(0)));
 
-        joystick.rightTrigger().or(cojoystick.R2()).onTrue(new InstantCommand(() -> agitator.startAgMotor(-0.3)))
+        joystick.rightTrigger().or(cojoystick.R2()).onTrue(new InstantCommand(() -> agitator.startAgMotor(-0.7)))
                 .onFalse(new InstantCommand(() -> agitator.stopAgMotor()));
         joystick.rightTrigger().or(cojoystick.R2()).onTrue(new InstantCommand(() -> indexer.setVelocity(30)))
                 .onFalse(new InstantCommand(() -> indexer.setVelocity(0)));
 
         joystick.rightBumper().whileTrue(spinUpShooterForHubShot())
                 .onFalse(new InstantCommand(() -> shooter.setVelocity(0)));
+
+        joystick.rightBumper().whileTrue(snapHoodToHub());
+
+        joystick.rightBumper().whileTrue(autoIndex())
+                .onFalse(new ParallelCommandGroup(new InstantCommand(() -> indexer.setVelocity(0)), new InstantCommand(() -> agitator.stopAgMotor())));
+
+        joystick.leftBumper().whileTrue(snapToPass()).onFalse(new InstantCommand(() -> shooter.setVelocity(0)));
 
         joystick.rightStick().onTrue(new InstantCommand(() -> hood.setPosition(5.9)));
         joystick.leftStick().onTrue(new InstantCommand(() -> hood.setPosition(0)));

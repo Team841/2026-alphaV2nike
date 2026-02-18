@@ -83,7 +83,7 @@ public class Shooter extends SubsystemBase {
 	}
 
 	public boolean atfullSpeed() {
-		return Math.abs(this.targetVelocity - this.getShooterVelocity()) < 1.5 && this.targetVelocity != 0;
+		return Math.abs(this.targetVelocity - this.getShooterVelocity()) < 2.5 && this.targetVelocity != 0;
 	}
 
 	public double getShooterVelocity() {
@@ -107,10 +107,10 @@ public class Shooter extends SubsystemBase {
 	public enum ShooterSpeed {
 
 		M1(-26),
-		M2(-28),
-		M3(-30),
-		M4(-33),
-		M5(-35);
+		M2(-29),
+		M3(-32.5),
+		M4(-35),
+		M5(-38);
 
 		private final double rps;
 
@@ -125,11 +125,11 @@ public class Shooter extends SubsystemBase {
 
 	public enum TimeOfFlight {
 
-		M1(0.2),
-		M2(0.3),
-		M3(0.4),
-		M4(0.5),
-		M5(0.6);
+		M1(0.8),
+		M2(1),
+		M3(1.2),
+		M4(1.4),
+		M5(1.7);
 
 		private final double sec;
 
