@@ -25,6 +25,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
@@ -74,6 +75,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final NetworkTable poseStateTable = test.getTable("PoseStates");
     private final StructPublisher<Pose2d> limelightDisplacedPose = poseStateTable
             .getStructTopic("LimelightDisplacedPose", Pose2d.struct).publish();
+
+    public final NetworkTableInstance vision = NetworkTableInstance.getDefault();
+
+    public final NetworkTable visionControlTable = vision.getTable("VisionControl");
+    public final BooleanPublisher ballVisionToggle = visionControlTable.getBooleanTopic("BallVisionToggle").publish();
 
     public final Consumer<VisionFieldPoseEstimate> visionEstimateConsumer = new Consumer<>() {
         @Override
@@ -360,6 +366,39 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
+    public Rotation2d getTurretAngleToScoreWhileMoving(double timeOfFlight) {
+        ChassisSpeeds fieldRelativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+            this.getState().Speeds, this.getState().Pose.getRotation());
+
+        Translation2d robotTranslationOverTime = new Translation2d(
+            fieldRelativeSpeeds.vxMetersPerSecond * timeOfFlight,
+            fieldRelativeSpeeds.vyMetersPerSecond * timeOfFlight);
+
+        Translation2d turretDisplacementFromRobot = new Translation2d(
+            0.1651, 
+            this.getState().Pose.getRotation().minus(new Rotation2d(Math.PI)));
+
+        Translation2d turretDisplacementFromField = this.getState().Pose.getTranslation().plus(turretDisplacementFromRobot);
+
+        Rotation2d turretAngleToHubFieldRelative;
+
+        if (RobotConstants.isRedAlliance.getAsBoolean()) {
+            turretAngleToHubFieldRelative = new Rotation2d(
+                Math.atan2(
+                    redHubPose.getY() - robotTranslationOverTime.getY() - turretDisplacementFromField.getY(),
+                    redHubPose.getX() - robotTranslationOverTime.getX() - turretDisplacementFromField.getX()));
+        } else {
+            turretAngleToHubFieldRelative = new Rotation2d(
+                Math.atan2(
+                    blueHubPose.getY() - robotTranslationOverTime.getY() - turretDisplacementFromField.getY(), 
+                    blueHubPose.getX() - robotTranslationOverTime.getX() - turretDisplacementFromField.getX()));
+        }
+
+        Rotation2d turretAngleToHubRobotRelative = wrapTo2Pi(turretAngleToHubFieldRelative.minus(this.getState().Pose.getRotation()).minus(new Rotation2d(Math.PI)));
+
+        return turretAngleToHubRobotRelative;
+    }
+
     public double getDistanceToHub() {
 
         if (RobotConstants.isRedAlliance.getAsBoolean()) {
@@ -389,10 +428,43 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
+    public double getTurretDistanceToHubWhileMoving(double timeOfFlight) {
+        ChassisSpeeds fieldRelativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+            this.getState().Speeds, this.getState().Pose.getRotation());
+
+        Translation2d robotTranslationOverTime = new Translation2d(
+            fieldRelativeSpeeds.vxMetersPerSecond * timeOfFlight,
+            fieldRelativeSpeeds.vyMetersPerSecond * timeOfFlight);
+
+        Translation2d turretDisplacementFromRobot = new Translation2d(
+            0.1651, 
+            this.getState().Pose.getRotation().minus(new Rotation2d(Math.PI)));
+
+        Translation2d turretDisplacementFromField = this.getState().Pose.getTranslation().plus(turretDisplacementFromRobot);
+
+        Translation2d turretDisplacementFromFieldOverTime = turretDisplacementFromField.plus(robotTranslationOverTime);
+
+        if (RobotConstants.isRedAlliance.getAsBoolean()) {
+            return getDistanceBetweenTranslations(redHubPose.getTranslation(), turretDisplacementFromFieldOverTime);
+        } else {
+            return getDistanceBetweenTranslations(blueHubPose.getTranslation(), turretDisplacementFromFieldOverTime);
+        }
+    }
+
     public static double getDistanceBetweenPoses(Pose2d pose1, Pose2d pose2) {
         return Math.sqrt(
                 ((Math.abs(pose1.getX() - pose2.getX())) * (Math.abs(pose1.getX() - pose2.getX()))) +
                         ((Math.abs(pose1.getY() - pose2.getY())) * (Math.abs(pose1.getY() - pose2.getY()))));
+    }
+
+    public static double getDistanceBetweenTranslations(Translation2d translation1, Translation2d translation2) {
+        return Math.sqrt(
+                ((Math.abs(translation1.getX() - translation2.getX())) * (Math.abs(translation1.getX() - translation2.getX()))) +
+                        ((Math.abs(translation1.getY() - translation2.getY())) * (Math.abs(translation1.getY() - translation2.getY()))));
+    }
+
+    public static Rotation2d wrapTo2Pi(Rotation2d angle) {
+        return new Rotation2d(((angle.getRadians() % (2.0 * Math.PI)) + (2.0 * Math.PI)) % (2.0 * Math.PI));
     }
 
     public void visionPeriodic() {

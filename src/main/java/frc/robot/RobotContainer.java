@@ -115,15 +115,12 @@ public class RobotContainer {
     }
 
     public Command snapTurretToHub() {
-        return Commands.run(
-                () -> {
-                    double angle = wrapTo2Pi(drivetrain.getAngleToScoreWhileMoving((shooter.getTimeOfFlightFromDistanceMeters(drivetrain.getDistanceToHub()))).getRadians());
-                    angle = wrapTo2Pi(angle - Math.PI);
-                    angle = wrapTo2Pi(angle - drivetrain.getState().Pose.getRotation().getRadians());
-
-                    turret.setPositionWithRadians(angle);
-                },
-                turret);
+        return new InstantCommand(
+            () -> turret.setPositionWithRotation2d(
+                drivetrain.getTurretAngleToScoreWhileMoving(
+                    shooter.getTimeOfFlightFromDistanceMeters(
+                        drivetrain.getDistanceToHub()
+        ))), turret);
     }
 
     public Command snapHoodToHub() {
@@ -173,7 +170,7 @@ public class RobotContainer {
     public Command spinUpShooterForHubShot() {
         return Commands.run(
                 () -> {
-                    double distanceToHub = drivetrain.getDistanceToHubWhileMoving(
+                    double distanceToHub = drivetrain.getTurretDistanceToHubWhileMoving(
                             shooter.getTimeOfFlightFromDistanceMeters(
                                     drivetrain.getDistanceToHub()));
                     shooter.setVelocity(shooter.getShooterSpeedFromDistanceMeters(distanceToHub));
