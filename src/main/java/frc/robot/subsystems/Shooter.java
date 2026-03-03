@@ -101,11 +101,11 @@ public class Shooter extends SubsystemBase {
 
 	public enum ShooterSpeed {
 
-		M1(-26),
-		M2(-29),
-		M3(-32.5),
-		M4(-35),
-		M5(-38);
+		M1(-24),
+		M2(-28),
+		M3(-32),
+		M4(-34.5),
+		M5(-37);
 
 		private final double rps;
 

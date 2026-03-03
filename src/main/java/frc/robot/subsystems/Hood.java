@@ -30,8 +30,8 @@ public class Hood extends SubsystemBase {
 
         this.hoodHeightMap = new InterpolatingDoubleTreeMap();
         this.hoodHeightMap.put(1.0, HoodHeight.M1.getPosition());
-        this.hoodHeightMap.put(5.0, HoodHeight.M5.getPosition());
-        this.hoodHeightMap.put(10.0, HoodHeight.M10.getPosition());
+        this.hoodHeightMap.put(8.0, HoodHeight.M5.getPosition());
+        this.hoodHeightMap.put(16.0, HoodHeight.M10.getPosition());
 
     }
 

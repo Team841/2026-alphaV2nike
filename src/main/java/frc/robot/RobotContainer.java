@@ -184,20 +184,26 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(
                 () -> {
-                    if (DriverStation.getAlliance().isPresent()) {
-                        if (DriverStation.getAlliance().get() == Alliance.Red) {
-                            return drive.withVelocityX(joystick.getLeftY() * MaxSpeed) 
-                                .withVelocityY(joystick.getLeftX() * MaxSpeed) 
-                                .withRotationalRate(-joystick.getRightX() * MaxAngularRate); 
+                    if (!joystick.back().getAsBoolean()) {
+                        if (DriverStation.getAlliance().isPresent()) {
+                            if (DriverStation.getAlliance().get() == Alliance.Red) {
+                                return drive.withVelocityX(joystick.getLeftY() * MaxSpeed) 
+                                    .withVelocityY(joystick.getLeftX() * MaxSpeed) 
+                                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate); 
+                            } else {
+                                return drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) 
+                                    .withVelocityY(-joystick.getLeftX() * MaxSpeed) 
+                                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate); 
+                            }
                         } else {
-                            return drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) 
-                                .withVelocityY(-joystick.getLeftX() * MaxSpeed) 
-                                .withRotationalRate(-joystick.getRightX() * MaxAngularRate); 
+                            return drive.withVelocityX(0) 
+                                .withVelocityY(0) 
+                                .withRotationalRate(0); 
                         }
                     } else {
                         return drive.withVelocityX(0) 
-                            .withVelocityY(0) 
-                            .withRotationalRate(0); 
+                                .withVelocityY(0) 
+                                .withRotationalRate(0); 
                     }
         }));
 
@@ -236,9 +242,11 @@ public class RobotContainer {
         joystick.rightStick().onTrue(new InstantCommand(() -> hood.setPosition(5.9)));
         joystick.leftStick().onTrue(new InstantCommand(() -> hood.setPosition(0)));
 
-        cojoystick.L1().whileTrue(rotateTurretToJoystick(turret, () -> cojoystick.getLeftX(), () -> -cojoystick.getLeftY()));
+        joystick.back().whileTrue(rotateTurretToJoystick(turret, () -> joystick.getLeftX(), () -> -joystick.getLeftY()));
 
-        cojoystick.R1().whileTrue(rotateHoodToJoystick(hood, () -> -cojoystick.getRightY()));
+        joystick.back().whileTrue(rotateHoodToJoystick(hood, () -> -joystick.getRightY()));
+
+        joystick.x().onTrue(new InstantCommand(() -> turret.zero()));
 
         cojoystick.triangle().onTrue(new InstantCommand(() -> shooter.requestVelocity(-90)));
         cojoystick.square().onTrue(new InstantCommand(() -> shooter.requestVelocity(-40)));
